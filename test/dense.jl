@@ -141,15 +141,15 @@ end
 end
 
 @testset "AutoGTPSA" begin
-    ad = AutoGTPSA(; descriptor = nothing)
+    ad = AutoGTPSA()
     @test ad isa AbstractADType
-    @test ad isa AutoGTPSA{Nothing}
+    @test ad isa AutoGTPSA{Nothing,false}
     @test mode(ad) isa ForwardMode
     @test ad.descriptor === nothing
 
-    ad = AutoGTPSA(; descriptor = Val(:descriptor))
+    ad = AutoGTPSA(; descriptor=Val(:descriptor), static=true)
     @test ad isa AbstractADType
-    @test ad isa AutoGTPSA{Val{:descriptor}}
+    @test ad isa AutoGTPSA{Val{:descriptor},true}
     @test mode(ad) isa ForwardMode
     @test ad.descriptor == Val(:descriptor)
 end

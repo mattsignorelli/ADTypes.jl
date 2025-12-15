@@ -281,7 +281,7 @@ function Base.show(io::IO, ::AutoTaylorDiff{order}) where {order}
 end
 
 """
-    AutoGTPSA{D}
+    AutoGTPSA{D,static}
 
 Struct used to select the [GTPSA.jl](https://github.com/bmad-sim/GTPSA.jl) backend for automatic differentiation.
 
@@ -289,26 +289,35 @@ Defined by [ADTypes.jl](https://github.com/SciML/ADTypes.jl).
 
 # Constructors
 
-    AutoGTPSA(; descriptor=nothing)
+    AutoGTPSA(; descriptor=nothing, static=false)
 
 # Fields
 
-  - `descriptor::D`: can be either
+  - `descriptor`: can be either
 
       + a GTPSA `Descriptor` specifying the number of variables/parameters, parameter
         order, individual variable/parameter truncation orders, and maximum order. See
         the [GTPSA.jl documentation](https://bmad-sim.github.io/GTPSA.jl/stable/man/b_descriptor/) for more details.
-      + `nothing` to automatically use a `Descriptor` given the context.
+      + `nothing` to automatically use a `Descriptor` given the context
+
+  - `static`: either `false` for dynamic `Descriptor` resolution, or `true` for static. 
+              See [this section  of the GTPSA.jl documentation](https://bmad-sim.github.io/GTPSA.jl/stable/advanced/#descmodes) for more details.
+
+# Type Parameters
+      + `D == Descriptor`, or `D == Nothing` for automatic `Descriptor` usage
+      + `static == true` for static `Descriptor` resolution, or `static == false` for dynamic `Descriptor` resolution
 """
-Base.@kwdef struct AutoGTPSA{D} <: AbstractADType
-    descriptor::D = nothing
+struct AutoGTPSA{D,static} <: AbstractADType
+    descriptor::D
+    AutoGTPSA(; descriptor=nothing, static=false) = new{typeof(descriptor),static}(descriptor)
 end
 
 mode(::AutoGTPSA) = ForwardMode()
 
-function Base.show(io::IO, backend::AutoGTPSA{D}) where {D}
+function Base.show(io::IO, backend::AutoGTPSA{D,static}) where {D,static}
     print(io, AutoGTPSA, "(")
-    D != Nothing && print(io, "descriptor=", repr(backend.descriptor; context = io))
+    D != Nothing && print(io, "descriptor=", repr(backend.descriptor; context = io), ", ")
+    print(io, "static=", repr(static; context = io))
     print(io, ")")
 end
 
